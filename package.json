@@ -1,0 +1,32 @@
+{
+  "name": "expression-parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine-ts --config=jasmine.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abdullah2993/expression-parser.git"
+  },
+  "author": "abdullah2993",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abdullah2993/expression-parser/issues"
+  },
+  "homepage": "https://github.com/abdullah2993/expression-parser#readme",
+  "devDependencies": {
+    "@types/jasmine": "^3.8.2",
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-plugin-import": "^2.23.4",
+    "jasmine-ts": "^0.4.0",
+    "nyc": "^15.1.0",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
+  }
+}
