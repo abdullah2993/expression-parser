@@ -1,4 +1,4 @@
-import Lexer from '../src/lexer';
+import {Lexer} from '../src/lexer';
 import { Token, TokenType } from '../src/token';
 
 describe('Lexer Tests', () => {
@@ -35,7 +35,7 @@ describe('Lexer Tests', () => {
 
   it('should tokenize a complex expression', () => {
     const lexer = new Lexer(
-      'a>1 and b<c or g <> "xyz" ( a + b - c *d /f) <> abc  and a > 1 a>= 1988 and bxx<=2 and e=true not FALSE is between 1',
+      'a>1 and b<c or g <> "xyz" ( a + b - c *d /f) <> abc  and a > 1 a>= 1988 and bxx<=2 and e=true not FALSE is between 1 null',
     );
     const expected: Token[] = [
       new Token(TokenType.Identifier, 'a', 0),
@@ -82,7 +82,8 @@ describe('Lexer Tests', () => {
       new Token(TokenType.Is, 'is', 104),
       new Token(TokenType.Between, 'between', 107),
       new Token(TokenType.Numeric, '1', 115),
-      new Token(TokenType.EOF, '\0', 116),
+      new Token(TokenType.Null, 'null', 117),
+      new Token(TokenType.EOF, '\0', 121),
     ];
 
     expected.forEach((tok) => {

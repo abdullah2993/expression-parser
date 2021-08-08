@@ -1,6 +1,10 @@
 import { Token, TokenType } from './token';
 
-export default class Lexer {
+export interface Tokenizer{
+  next(): Token;
+}
+
+export class Lexer {
   private position: number = 0;
 
   private readPosition: number = 0;
@@ -173,6 +177,7 @@ export default class Lexer {
     false: TokenType.False,
     is: TokenType.Is,
     between: TokenType.Between,
+    null: TokenType.Null,
   };
 
   private static resolveIdentifier(ident: string): TokenType {
