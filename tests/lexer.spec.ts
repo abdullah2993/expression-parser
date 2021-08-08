@@ -1,4 +1,4 @@
-import {Lexer} from '../src/lexer';
+import { Lexer } from '../src/lexer';
 import { Token, TokenType } from '../src/token';
 
 describe('Lexer Tests', () => {

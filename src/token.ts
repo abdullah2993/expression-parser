@@ -30,7 +30,7 @@ export enum TokenType {
 
   Between = 'between',
   Is = 'is',
-  Null= 'null',
+  Null = 'null',
 }
 
 export class Token {
@@ -41,6 +41,6 @@ export class Token {
   ) {}
 
   toString(): string {
-    return `{ type: ${this.type}, literal: ${this.literal} } as position: ${this.position}.`
+    return `{ type: ${this.type}, literal: ${this.literal} } as position: ${this.position}.`;
   }
 }

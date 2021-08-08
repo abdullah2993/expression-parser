@@ -1,25 +1,27 @@
-import { evaluate, evaluateObject } from "../src/evaluator";
+import { evaluate, evaluateObject } from '../src/evaluator';
 
 describe('Evaluator tests', () => {
   it('should solve basic math equations', () => {
     expect(evaluate('1+2')).toBe(3);
-    expect(evaluate("10 + 2 * 6")).toBe(22);
-    expect(evaluate("100 * 2 + 12")).toBe(212);
-    expect(evaluate("100 * ( 2 + 12 )")).toBe(1400);
-    expect(evaluate("100 * ( 2 + 12 ) / 14")).toBe(100);
+    expect(evaluate('10 + 2 * 6')).toBe(22);
+    expect(evaluate('100 * 2 + 12')).toBe(212);
+    expect(evaluate('100 * ( 2 + 12 )')).toBe(1400);
+    expect(evaluate('100 * ( 2 + 12 ) / 14')).toBe(100);
   });
 
   it('should solve basic math equations with object context', () => {
-    const context = { a: 1, b: 2, c: 10, d: 6, e: 100, f: 12, g: 14 }
+    const context = {
+      a: 1, b: 2, c: 10, d: 6, e: 100, f: 12, g: 14,
+    };
     expect(evaluateObject('a+b', context)).toBe(3);
-    expect(evaluateObject("c + b * d", context)).toBe(22);
-    expect(evaluateObject("e * b + f", context)).toBe(212);
-    expect(evaluateObject("e * ( b + f )", context)).toBe(1400);
-    expect(evaluateObject("e * ( b + f ) / g", context)).toBe(100);
+    expect(evaluateObject('c + b * d', context)).toBe(22);
+    expect(evaluateObject('e * b + f', context)).toBe(212);
+    expect(evaluateObject('e * ( b + f )', context)).toBe(1400);
+    expect(evaluateObject('e * ( b + f ) / g', context)).toBe(100);
   });
 
   it('should resolve length of string', () => {
-    const val = { a: 'xyz' }
+    const val = { a: 'xyz' };
     expect(evaluateObject('length(a)', val)).toBe(3);
   });
 
@@ -32,7 +34,6 @@ describe('Evaluator tests', () => {
     const val = { a: 'asd123asd' };
     expect(evaluateObject('length(a) = 9', val)).toBe(true);
   });
-
 
   it('should check not null', () => {
     const val = { a: 'asd123asd' };
@@ -80,6 +81,4 @@ describe('Evaluator tests', () => {
     expect(evaluateObject('a>b', val)).toBe(false);
     expect(evaluateObject('a<b', val)).toBe(true);
   });
-
 });
-

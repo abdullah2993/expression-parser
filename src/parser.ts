@@ -1,11 +1,12 @@
-import { BinaryExpression, Expression, FunctionCallExpression, IdentifierExpression, ValueExpression } from "./ast";
-import { Tokenizer } from "./lexer";
-import { Token, TokenType } from "./token";
+import {
+  BinaryExpression, Expression, FunctionCallExpression, IdentifierExpression, ValueExpression,
+} from './ast';
+import { Tokenizer } from './lexer';
+import { Token, TokenType } from './token';
 
 export type PrecedenceMap = { [key in TokenType]?: number };
 
-
-const precedence: PrecedenceMap = {
+const precedences: PrecedenceMap = {
   [TokenType.And]: 1,
   [TokenType.Or]: 2,
   [TokenType.Not]: 3,
@@ -21,12 +22,12 @@ const precedence: PrecedenceMap = {
   [TokenType.Mul]: 9,
   [TokenType.Div]: 9,
   [TokenType.Lparn]: 10,
-}
+};
 
 export class Parser {
   private currentToken: Token;
-  private peekToken: Token;
 
+  private peekToken: Token;
 
   get currentPrecedence(): number {
     return this.precedenceMap[this.currentToken.type] ?? 0;
@@ -37,9 +38,10 @@ export class Parser {
   }
 
   private prefixParsers: { [key in TokenType]?: (...args: any[]) => Expression };
+
   private infixParsers: { [key in TokenType]?: (...args: any[]) => Expression };
 
-  constructor(private lexer: Tokenizer, private precedenceMap = precedence) {
+  constructor(private lexer: Tokenizer, private precedenceMap = precedences) {
     this.currentToken = this.lexer.next();
     this.peekToken = this.lexer.next();
 
@@ -74,6 +76,7 @@ export class Parser {
   parse(): Expression {
     return this.parseExpression();
   }
+
   parseExpression(precedence: number = 0): Expression {
     const prefixParser = this.prefixParsers[this.currentToken.type];
     if (!prefixParser) {
@@ -144,7 +147,7 @@ export class Parser {
   }
 
   private parseInfixExpression(left: Expression): Expression {
-    const currentPrecedence = this.currentPrecedence;
+    const { currentPrecedence } = this;
     const op = this.currentToken.type;
     this.nextToken();
     return new BinaryExpression(op, left, this.parseExpression(currentPrecedence));
@@ -156,27 +159,31 @@ export class Parser {
       op = TokenType.Neq;
       this.nextToken();
     }
-    this.expectPeekToken(TokenType.Null)
+    this.expectPeekToken(TokenType.Null);
     return new BinaryExpression(op, left, new ValueExpression(null));
   }
 
   private parseBetweenExpression(left: Expression): Expression {
-    this.expectPeekToken(TokenType.Numeric)
+    this.expectPeekToken(TokenType.Numeric);
     const min = this.parseNumber();
     this.expectPeekToken(TokenType.And);
-    this.expectPeekToken(TokenType.Numeric)
+    this.expectPeekToken(TokenType.Numeric);
     const max = this.parseNumber();
-    return new BinaryExpression(TokenType.And, new BinaryExpression(TokenType.Gte, left, min), new BinaryExpression(TokenType.Lte, left, max));
+    return new BinaryExpression(
+      TokenType.And,
+      new BinaryExpression(TokenType.Gte, left, min),
+      new BinaryExpression(TokenType.Lte, left, max),
+    );
   }
 
   private parseCallExpression(fn: Expression): Expression {
-    if(fn.type !== 'IdentifierExpression') {
+    if (fn.type !== 'IdentifierExpression') {
       throw new Error('Invalid parsing try for function call');
-    }else if (fn.name.toLowerCase() !== 'length'){
+    } else if (fn.name.toLowerCase() !== 'length') {
       // TODO : add more functions
       throw new Error(`Expected LENGTH(parameter) but got ${this.currentToken}`);
     }
-    this.expectPeekToken(TokenType.Identifier)
+    this.expectPeekToken(TokenType.Identifier);
     const args = [this.parseIdentifier()];
     this.expectPeekToken(TokenType.Rparn);
     return new FunctionCallExpression(fn.name, args);
