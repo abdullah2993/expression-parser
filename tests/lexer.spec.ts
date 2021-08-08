@@ -35,7 +35,7 @@ describe('Lexer Tests', () => {
 
   it('should tokenize a complex expression', () => {
     const lexer = new Lexer(
-      'a>1 and b<c or g <> "xyz" ( a + b - c *d /f) <> abc  and a > 1 a>= 1988 and bxx<=2 and e=true not FALSE',
+      'a>1 and b<c or g <> "xyz" ( a + b - c *d /f) <> abc  and a > 1 a>= 1988 and bxx<=2 and e=true not FALSE is between 1',
     );
     const expected: Token[] = [
       new Token(TokenType.Identifier, 'a', 0),
@@ -79,7 +79,10 @@ describe('Lexer Tests', () => {
       new Token(TokenType.True, 'true', 89),
       new Token(TokenType.Not, 'not', 94),
       new Token(TokenType.False, 'false', 98),
-      new Token(TokenType.EOF, '\0', 103),
+      new Token(TokenType.Is, 'is', 104),
+      new Token(TokenType.Between, 'between', 107),
+      new Token(TokenType.Numeric, '1', 115),
+      new Token(TokenType.EOF, '\0', 116),
     ];
 
     expected.forEach((tok) => {

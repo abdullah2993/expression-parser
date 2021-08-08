@@ -27,6 +27,9 @@ export enum TokenType {
 
   True = 'true',
   False = 'false',
+
+  Between = 'between',
+  Is = 'is',
 }
 
 export class Token {

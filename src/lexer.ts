@@ -171,6 +171,8 @@ export default class Lexer {
     not: TokenType.Not,
     true: TokenType.True,
     false: TokenType.False,
+    is: TokenType.Is,
+    between: TokenType.Between,
   };
 
   private static resolveIdentifier(ident: string): TokenType {
