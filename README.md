@@ -97,6 +97,69 @@ evaluateObject('a<b', val);
 
 ```
 
+## Sample AST
+
+```json
+//Expression: a is not null and length(a) between 4 and 10
+{
+  "operator": "and",
+  "left": {
+    "operator": "<>",
+    "left": {
+      "name": "a",
+      "type": "IdentifierExpression"
+    },
+    "right": {
+      "value": null,
+      "type": "ValueExpression"
+    },
+    "type": "BinaryExpression"
+  },
+  "right": {
+    "operator": "and",
+    "left": {
+      "operator": ">=",
+      "left": {
+        "name": "length",
+        "args": [
+          {
+            "name": "a",
+            "type": "IdentifierExpression"
+          }
+        ],
+        "type": "FunctionCallExpression"
+      },
+      "right": {
+        "value": 4,
+        "type": "ValueExpression"
+      },
+      "type": "BinaryExpression"
+    },
+    "right": {
+      "operator": "<=",
+      "left": {
+        "name": "length",
+        "args": [
+          {
+            "name": "a",
+            "type": "IdentifierExpression"
+          }
+        ],
+        "type": "FunctionCallExpression"
+      },
+      "right": {
+        "value": 10,
+        "type": "ValueExpression"
+      },
+      "type": "BinaryExpression"
+    },
+    "type": "BinaryExpression"
+  },
+  "type": "BinaryExpression"
+}
+
+```
+
 ## Test Coverage
 ```
 13 specs, 0 failures
