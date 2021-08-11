@@ -20,6 +20,7 @@ An expression evaluator written in typescript with the goal to support `SQL` lik
 - `IS NULL`
 - `IS NOT NULL`
 - `BETWEEN [NUMBER] AND [NUMBER]`
+- `CASE WHEN expression THEN expression [WHEN expression] [ELSE expression] END`
 ### Functions
 Currently only function that is evaluated is the `LENGTH(variable)` function but supports function calls at the parser level so it is fairly easy to add more `SQL` functions.
 

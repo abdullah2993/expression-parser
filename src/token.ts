@@ -31,6 +31,14 @@ export enum TokenType {
   Between = 'between',
   Is = 'is',
   Null = 'null',
+
+  Comma = ',',
+
+  Case = 'case',
+  When = 'when',
+  Else = 'else',
+  End = 'end',
+  Then = 'then',
 }
 
 export class Token {

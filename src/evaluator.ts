@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { BinaryExpression, Expression } from './ast';
+import { BinaryExpression, CaseExpression, Expression } from './ast';
 import { parse } from './parser';
 
 function evaluateExpressions(expressions: Expression[], context?: (identifier: string) => any): any[] {
@@ -49,6 +49,19 @@ function evaluateBinaryExpression(expression: BinaryExpression, context?: (ident
   }
 }
 
+function evaluateCaseExpression(expression: CaseExpression, context?: (identifier: string) => any): any {
+  for (let index = 0; index < expression.conditions.length; index++) {
+    const cond = expression.conditions[index];
+    if (evaluateExpression(cond.when, context)) {
+      return evaluateExpression(cond.then, context);
+    }
+  }
+  if (expression.last) {
+    return evaluateExpression(expression.last, context);
+  }
+  return false;
+}
+
 function evaluateExpression(expression: Expression, context?: (identifier: string) => any): any {
   switch (expression.type) {
     case 'IdentifierExpression':
@@ -59,6 +72,8 @@ function evaluateExpression(expression: Expression, context?: (identifier: strin
       return evaluateFunctionCall(expression.name, evaluateExpressions(expression.args, context));
     case 'BinaryExpression':
       return evaluateBinaryExpression(expression, context);
+    case 'CaseExpression':
+      return evaluateCaseExpression(expression, context);
     default:
       throw new Error(`Invalid AST node${expression}`);
   }
