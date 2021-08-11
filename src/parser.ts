@@ -1,7 +1,7 @@
 import {
   BinaryExpression, Expression, FunctionCallExpression, IdentifierExpression, ValueExpression,
 } from './ast';
-import { Tokenizer } from './lexer';
+import { Lexer, Tokenizer } from './lexer';
 import { Token, TokenType } from './token';
 
 export type PrecedenceMap = { [key in TokenType]?: number };
@@ -188,4 +188,10 @@ export class Parser {
     this.expectPeekToken(TokenType.Rparn);
     return new FunctionCallExpression(fn.name, args);
   }
+}
+
+export function parse(expression: string): Expression {
+  const lexer = new Lexer(expression);
+  const parser = new Parser(lexer);
+  return parser.parse();
 }

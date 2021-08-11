@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { BinaryExpression, Expression } from './ast';
-import { Lexer } from './lexer';
-import { Parser } from './parser';
+import { parse } from './parser';
 
 function evaluateExpressions(expressions: Expression[], context?: (identifier: string) => any): any[] {
   return expressions.map((exp) => evaluateExpression(exp, context));
@@ -66,15 +65,10 @@ function evaluateExpression(expression: Expression, context?: (identifier: strin
 }
 
 export function evaluate(expression: string, context?: (identifier: string) => any): any {
-  const lexer = new Lexer(expression);
-  const parser = new Parser(lexer);
-  const ast = parser.parse();
+  const ast = parse(expression);
   return evaluateExpression(ast, context);
 }
 
 export function evaluateObject(expression: string, value: any): any {
-  const lexer = new Lexer(expression);
-  const parser = new Parser(lexer);
-  const ast = parser.parse();
-  return evaluateExpression(ast, (name) => value[name]);
+  return evaluate(expression, (name) => value[name]);
 }
