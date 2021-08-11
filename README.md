@@ -1,6 +1,11 @@
 # expression-parser [![Build](https://github.com/abdullah2993/expression-parser/actions/workflows/build.yaml/badge.svg)](https://github.com/abdullah2993/expression-parser/actions/workflows/build.yaml)
 An expression evaluator written in typescript with the goal to support `SQL` like `WHERE` clauses.
 
+## Installation
+```
+npm install --save @abdullah2993/expression-parser
+```
+
 ## Supported Operations and Functions
 ### Arithmetics
 - `+`
