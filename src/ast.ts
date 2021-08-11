@@ -1,9 +1,19 @@
 import { TokenType } from './token';
 
-export type Expression = BinaryExpression | UnaryExpression | ValueExpression | FunctionCallExpression | IdentifierExpression;
+export type Expression = BinaryExpression
+| UnaryExpression
+| ValueExpression
+| FunctionCallExpression
+| IdentifierExpression
+| CaseExpression;
 
 export interface Node {
-  readonly type: 'BinaryExpression' | 'UnaryExpression' | 'ValueExpression' | 'FunctionCallExpression' | 'IdentifierExpression';
+  readonly type: 'BinaryExpression' |
+  'UnaryExpression' |
+  'ValueExpression' |
+  'FunctionCallExpression' |
+  'IdentifierExpression' |
+  'CaseExpression';
 }
 
 export class BinaryExpression implements Node {
@@ -34,4 +44,9 @@ export class IdentifierExpression implements Node {
   constructor(public name: string) { }
 
   readonly type = 'IdentifierExpression';
+}
+export class CaseExpression implements Node {
+  constructor(public conditions: { when: Expression, then: Expression }[], public last?: Expression) { }
+
+  readonly type = 'CaseExpression';
 }

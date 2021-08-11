@@ -67,6 +67,9 @@ export class Lexer {
       case ')':
         token = this.getToken(TokenType.Rparn);
         break;
+      case ',':
+        token = this.getToken(TokenType.Comma);
+        break;
       case '\0':
         token = this.getToken(TokenType.EOF, '\0');
         break;
@@ -178,6 +181,11 @@ export class Lexer {
     is: TokenType.Is,
     between: TokenType.Between,
     null: TokenType.Null,
+    case: TokenType.Case,
+    when: TokenType.When,
+    else: TokenType.Else,
+    end: TokenType.End,
+    then: TokenType.Then,
   };
 
   private static resolveIdentifier(ident: string): TokenType {

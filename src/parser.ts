@@ -1,5 +1,5 @@
 import {
-  BinaryExpression, Expression, FunctionCallExpression, IdentifierExpression, ValueExpression,
+  BinaryExpression, CaseExpression, Expression, FunctionCallExpression, IdentifierExpression, ValueExpression,
 } from './ast';
 import { Lexer, Tokenizer } from './lexer';
 import { Token, TokenType } from './token';
@@ -11,6 +11,7 @@ const precedences: PrecedenceMap = {
   [TokenType.Or]: 2,
   [TokenType.Not]: 3,
   [TokenType.Eq]: 4,
+  [TokenType.Neq]: 4,
   [TokenType.Lt]: 5,
   [TokenType.Lte]: 5,
   [TokenType.Gt]: 5,
@@ -52,6 +53,7 @@ export class Parser {
       [TokenType.Lparn]: this.parseGroupedExpression.bind(this),
       [TokenType.True]: this.parseBoolean.bind(this),
       [TokenType.False]: this.parseBoolean.bind(this),
+      [TokenType.Case]: this.parseCaseExpression.bind(this),
     };
 
     this.infixParsers = {
@@ -134,7 +136,7 @@ export class Parser {
   }
 
   private parseBoolean(): Expression {
-    return new ValueExpression(Boolean(this.currentToken.literal));
+    return new ValueExpression(this.currentToken.type === TokenType.True);
   }
 
   private parseGroupedExpression(): Expression {
@@ -176,17 +178,41 @@ export class Parser {
     );
   }
 
-  private parseCallExpression(fn: Expression): Expression {
-    if (fn.type !== 'IdentifierExpression') {
-      throw new Error('Invalid parsing try for function call');
-    } else if (fn.name.toLowerCase() !== 'length') {
-      // TODO : add more functions
-      throw new Error(`Expected LENGTH(parameter) but got ${this.currentToken}`);
+  private parseCallExpression(fn: FunctionCallExpression): Expression {
+    const args: Expression[] = [];
+    this.nextToken();
+    while (!this.currentTokenIs(TokenType.Rparn)) {
+      args.push(this.parseExpression());
+      this.nextToken();
+      if (!this.currentTokenIs(TokenType.Comma) && !this.currentTokenIs(TokenType.Rparn)) {
+        throw new Error(`Expected , or ) got ${this.currentToken}`);
+      }
     }
-    this.expectPeekToken(TokenType.Identifier);
-    const args = [this.parseIdentifier()];
-    this.expectPeekToken(TokenType.Rparn);
     return new FunctionCallExpression(fn.name, args);
+  }
+
+  private parseCaseExpression(): Expression {
+    const conditions: { when: Expression, then: Expression }[] = [];
+    let last;
+    if (!this.peekTokenIs(TokenType.When)) {
+      throw new Error(`Expected when got ${this.currentToken}`);
+    }
+    while (!this.peekTokenIs(TokenType.End) && !this.peekTokenIs(TokenType.Else)) {
+      this.expectPeekToken(TokenType.When);
+      this.nextToken();
+      const when = this.parseExpression();
+      this.expectPeekToken(TokenType.Then);
+      this.nextToken();
+      const then = this.parseExpression();
+      conditions.push({ when, then });
+    }
+    if (this.peekTokenIs(TokenType.Else)) {
+      this.nextToken();
+      this.nextToken();
+      last = this.parseExpression();
+    }
+    this.expectPeekToken(TokenType.End);
+    return new CaseExpression(conditions, last);
   }
 }
 
