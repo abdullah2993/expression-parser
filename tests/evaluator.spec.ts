@@ -82,7 +82,7 @@ describe('Evaluator tests', () => {
     expect(evaluateObject('a<b', val)).toBe(true);
     expect(evaluateObject('a>=1 and a< 10 and b >1 and b<3', val)).toBe(true);
   });
-  fit('should evaluate case expressions', () => {
+  it('should evaluate case expressions', () => {
     let val: any = { a: 1, b: 3 };
     expect(evaluateObject('case when a > 1 then true else false end', val)).toBe(false);
     val = { a: 2, b: 3 };
