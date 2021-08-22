@@ -17,6 +17,33 @@ describe('Lexer Tests', () => {
     expect(token.type).toEqual(TokenType.EOF);
     expect(token.literal).toEqual('\0');
   });
+  it('should parse basic expressions with floating point numbers', () => {
+    const lexer = new Lexer('1.0 = 1.1 = 0.1333 = .64');
+    let token = lexer.next();
+    expect(token.type).toEqual(TokenType.Numeric);
+    expect(token.literal).toEqual('1.0');
+    token = lexer.next();
+    expect(token.type).toEqual(TokenType.Eq);
+    expect(token.literal).toEqual('=');
+    token = lexer.next();
+    expect(token.type).toEqual(TokenType.Numeric);
+    expect(token.literal).toEqual('1.1');
+    token = lexer.next();
+    expect(token.type).toEqual(TokenType.Eq);
+    expect(token.literal).toEqual('=');
+    token = lexer.next();
+    expect(token.type).toEqual(TokenType.Numeric);
+    expect(token.literal).toEqual('0.1333');
+    token = lexer.next();
+    expect(token.type).toEqual(TokenType.Eq);
+    expect(token.literal).toEqual('=');
+    token = lexer.next();
+    expect(token.type).toEqual(TokenType.Numeric);
+    expect(token.literal).toEqual('.64');
+    token = lexer.next();
+    expect(token.type).toEqual(TokenType.EOF);
+    expect(token.literal).toEqual('\0');
+  });
   it('should parse basic types expressions', () => {
     const lexer = new Lexer('999 <> "asd" ');
     let token = lexer.next();
@@ -35,7 +62,7 @@ describe('Lexer Tests', () => {
 
   it('should tokenize a complex expression', () => {
     const lexer = new Lexer(
-      'a>1 and b<c or g <> "xyz" ( a + b - c *d /f) <> abc  and a > 1 a>= 1988 and bxx<=2 and e=true not FALSE is between 1 null',
+      'a>1 and b<c or g <> "xyz" ( a + b - c *d /f) <> abc  and a > 1.3 a>= .1988 and bxx<=2 and e=true not FALSE is between 1 null',
     );
     const expected: Token[] = [
       new Token(TokenType.Identifier, 'a', 0),
@@ -65,25 +92,25 @@ describe('Lexer Tests', () => {
       new Token(TokenType.And, 'and', 53),
       new Token(TokenType.Identifier, 'a', 57),
       new Token(TokenType.Gt, '>', 59),
-      new Token(TokenType.Numeric, '1', 61),
-      new Token(TokenType.Identifier, 'a', 63),
-      new Token(TokenType.Gte, '>=', 64),
-      new Token(TokenType.Numeric, '1988', 67),
-      new Token(TokenType.And, 'and', 72),
-      new Token(TokenType.Identifier, 'bxx', 76),
-      new Token(TokenType.Lte, '<=', 79),
-      new Token(TokenType.Numeric, '2', 81),
-      new Token(TokenType.And, 'and', 83),
-      new Token(TokenType.Identifier, 'e', 87),
-      new Token(TokenType.Eq, '=', 88),
-      new Token(TokenType.True, 'true', 89),
-      new Token(TokenType.Not, 'not', 94),
-      new Token(TokenType.False, 'false', 98),
-      new Token(TokenType.Is, 'is', 104),
-      new Token(TokenType.Between, 'between', 107),
-      new Token(TokenType.Numeric, '1', 115),
-      new Token(TokenType.Null, 'null', 117),
-      new Token(TokenType.EOF, '\0', 121),
+      new Token(TokenType.Numeric, '1.3', 61),
+      new Token(TokenType.Identifier, 'a', 65),
+      new Token(TokenType.Gte, '>=', 66),
+      new Token(TokenType.Numeric, '.1988', 69),
+      new Token(TokenType.And, 'and', 75),
+      new Token(TokenType.Identifier, 'bxx', 79),
+      new Token(TokenType.Lte, '<=', 82),
+      new Token(TokenType.Numeric, '2', 84),
+      new Token(TokenType.And, 'and', 86),
+      new Token(TokenType.Identifier, 'e', 90),
+      new Token(TokenType.Eq, '=', 91),
+      new Token(TokenType.True, 'true', 92),
+      new Token(TokenType.Not, 'not', 97),
+      new Token(TokenType.False, 'false', 101),
+      new Token(TokenType.Is, 'is', 107),
+      new Token(TokenType.Between, 'between', 110),
+      new Token(TokenType.Numeric, '1', 118),
+      new Token(TokenType.Null, 'null', 120),
+      new Token(TokenType.EOF, '\0', 124),
     ];
 
     expected.forEach((tok) => {
