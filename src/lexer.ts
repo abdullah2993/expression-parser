@@ -82,7 +82,7 @@ export class Lexer {
           } else {
             token = this.getToken(identType);
           }
-        } else if (Lexer.isNumber(this.currentChar)) {
+        } else if (Lexer.isNumber(this.currentChar) || Lexer.isDot(this.currentChar)) {
           const num = this.readNumber();
           token = this.getToken(TokenType.Numeric, num);
         } else {
@@ -135,7 +135,11 @@ export class Lexer {
 
   private readNumber(): string {
     const start = this.position;
-    while (Lexer.isNumber(this.peekChar())) {
+    let haveDecimal = Lexer.isDot(this.currentChar);
+    while (Lexer.isNumber(this.peekChar()) || (Lexer.isDot(this.peekChar()) && !haveDecimal)) {
+      if (Lexer.isDot(this.currentChar)) {
+        haveDecimal = true;
+      }
       this.readChar();
     }
     return this.text.substring(start, this.position + 1);
@@ -170,6 +174,10 @@ export class Lexer {
       || (charCode >= 0x61 && charCode <= 0x7a) // a-z
       || charCode === 0x5f // '_'
     );
+  }
+
+  private static isDot(charStr: string): boolean {
+    return charStr === '.';
   }
 
   private static keywords: { [key: string]: TokenType } = {
