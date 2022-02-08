@@ -1,7 +1,7 @@
 {
   "name": "@abdullah2993/expression-parser",
   "version": "1.1.2",
-  "description": "",
+  "description": "An expression evaluator written in typescript with the goal to support SQL like WHERE clauses.",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
