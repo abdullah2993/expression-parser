@@ -18,6 +18,19 @@
   "bugs": {
     "url": "https://github.com/abdullah2993/expression-parser/issues"
   },
+  "keywords": [
+    "parser",
+    "expression",
+    "filters",
+    "expression-evaluator",
+    "whereclause",
+    "where",
+    "conditions",
+    "where clause",
+    "where-clause",
+    "ast",
+    "sql where"
+  ],
   "homepage": "https://github.com/abdullah2993/expression-parser#readme",
   "devDependencies": {
     "@types/jasmine": "^3.8.2",
