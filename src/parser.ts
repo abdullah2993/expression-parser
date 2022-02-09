@@ -79,7 +79,7 @@ export class Parser {
     return this.parseExpression();
   }
 
-  parseExpression(precedence: number = 0): Expression {
+  private parseExpression(precedence: number = 0): Expression {
     const prefixParser = this.prefixParsers[this.currentToken.type];
     if (!prefixParser) {
       throw new Error(`Unexpected start of expression: ${this.currentToken}`);
