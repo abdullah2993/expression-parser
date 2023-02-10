@@ -1,35 +1,48 @@
 # expression-parser [![Build](https://github.com/abdullah2993/expression-parser/actions/workflows/build.yaml/badge.svg)](https://github.com/abdullah2993/expression-parser/actions/workflows/build.yaml)
+
 An expression evaluator written in typescript with the goal to support `SQL` like `WHERE` clauses.
 
 ## Installation
+
 ```
 npm install --save @abdullah2993/expression-parser
 ```
 
 ## Supported Operations and Functions
+
 ### Arithmetics
+
 - `+`
 - `-`
 - `*`
 - `/`
+
 ### Comparison
+
 - `=`
 - `<>`
 - `>`
 - `>=`
 - `<=`
+
 ### Logical
+
 - `and`
 - `or`
+
 ### SQL
+
 - `IS NULL`
 - `IS NOT NULL`
 - `BETWEEN [NUMBER] AND [NUMBER]`
 - `CASE WHEN expression THEN expression [WHEN expression] [ELSE expression] END`
+
 ### Functions
+
 Currently only function that is evaluated is the `LENGTH(variable)` function but supports function calls at the parser level so it is fairly easy to add more `SQL` functions.
 
 ## Examples
+
 ```js
 
 /** Basic Math **/
@@ -101,6 +114,37 @@ evaluateObject('a>b', val);
 evaluateObject('a<b', val);
 // true
 
+const val = { a: 1, b: 3 };
+evaluateObject('case when a > 1 then true else false end', val);
+// false
+const val = { a: 2, b: 3 };
+evaluateObject('case when a > 1 then true else false end', val);
+// true
+val = { a: 2, b: 3 };
+evaluateObject('case when a = 1 then 1 when a = 2 then 1 else false end', val);
+// 1
+evaluateObject('case when a = 1 then 1 when a = 2 then 2 else 3 end', val);
+// 2
+evaluateObject('case when a = 1 then 1 when a = 3 then 3 else 2 end', val);
+// 2
+const rule = `case
+                when light = 'Green' then 'Go'
+                when light = 'Yellow' then 'Should Stop'
+                when light = 'Red' then 'Stop'
+                else 'Invalid State' end`;
+val = { light: 'Yellow' };
+evaluateObject(rule, val))
+// 'Should Stop'
+val = { light: 'Green' };
+evaluateObject(rule, val))
+// 'Go'
+val = { light: 'Red' };
+evaluateObject(rule, val))
+// 'Stop'
+val = { light: 'Blue' };
+evaluateObject(rule, val))
+// 'Invalid State'
+
 ```
 
 ## Sample AST
@@ -163,10 +207,10 @@ evaluateObject('a<b', val);
   },
   "type": "BinaryExpression"
 }
-
 ```
 
 ## Test Coverage
+
 ```
 13 specs, 0 failures
 Finished in 0.069 seconds
@@ -182,5 +226,3 @@ All files     |   93.24 |    83.33 |   92.73 |   93.19 |
  token.ts     |   97.06 |      100 |      75 |   96.97 | 44
 --------------|---------|----------|---------|---------|-----------------------------------
 ```
-
-

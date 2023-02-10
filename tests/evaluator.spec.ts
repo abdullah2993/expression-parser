@@ -91,5 +91,18 @@ describe('Evaluator tests', () => {
     expect(evaluateObject('case when a = 1 then 1 when a = 2 then 1 else false end', val)).toBe(1);
     expect(evaluateObject('case when a = 1 then 1 when a = 2 then 2 else 3 end', val)).toBe(2);
     expect(evaluateObject('case when a = 1 then 1 when a = 3 then 3 else 2 end', val)).toBe(2);
+    const rule = `case
+                    when light = 'Green' then 'Go'
+                    when light = 'Yellow' then 'Should Stop'
+                    when light = 'Red' then 'Stop'
+                    else 'Invalid State' end`;
+    val = { light: 'Yellow' };
+    expect(evaluateObject(rule, val)).toBe('Should Stop');
+    val = { light: 'Green' };
+    expect(evaluateObject(rule, val)).toBe('Go');
+    val = { light: 'Red' };
+    expect(evaluateObject(rule, val)).toBe('Stop');
+    val = { light: 'Blue' };
+    expect(evaluateObject(rule, val)).toBe('Invalid State');
   });
 });
