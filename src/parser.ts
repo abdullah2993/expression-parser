@@ -223,7 +223,7 @@ export class Parser {
       );
     }
     this.nextToken();
-    const expression = this.parseExpression(3);
+    const expression = this.parseExpression(precedences[TokenType.Not]);
     return new HasExpression(
       name as IdentifierExpression,
       expression,
