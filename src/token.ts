@@ -39,13 +39,16 @@ export enum TokenType {
   Else = 'else',
   End = 'end',
   Then = 'then',
+
+  In = 'in',
+  Has = 'has',
 }
 
 export class Token {
   constructor(
     public type: TokenType,
     public literal: string,
-    public position: Number,
+    public position: Number
   ) {}
 
   toString(): string {

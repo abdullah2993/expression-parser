@@ -62,7 +62,7 @@ describe('Lexer Tests', () => {
 
   it('should tokenize a complex expression', () => {
     const lexer = new Lexer(
-      'a>1 and b<c or g <> "xyz" ( a + b - c *d /f) <> abc  and a > 1.3 a>= .1988 and bxx<=2 and e=true not FALSE is between 1 null',
+      'a>1 and b<c or g <> "xyz" ( a + b - c *d /f) <> abc  and a > 1.3 a>= .1988 and bxx<=2 and e=true not FALSE is between 1 null and b in (1,2,3) or a has x = 5 or a not has 9'
     );
     const expected: Token[] = [
       new Token(TokenType.Identifier, 'a', 0),
@@ -110,7 +110,30 @@ describe('Lexer Tests', () => {
       new Token(TokenType.Between, 'between', 110),
       new Token(TokenType.Numeric, '1', 118),
       new Token(TokenType.Null, 'null', 120),
-      new Token(TokenType.EOF, '\0', 124),
+      new Token(TokenType.And, 'and', 125),
+      new Token(TokenType.Identifier, 'b', 129),
+      new Token(TokenType.In, 'in', 131),
+      new Token(TokenType.Lparn, '(', 134),
+      new Token(TokenType.Numeric, '1', 135),
+      new Token(TokenType.Comma, ',', 136),
+      new Token(TokenType.Numeric, '2', 137),
+      new Token(TokenType.Comma, ',', 138),
+      new Token(TokenType.Numeric, '3', 139),
+      new Token(TokenType.Rparn, ')', 140),
+
+      new Token(TokenType.Or, 'or', 142),
+      new Token(TokenType.Identifier, 'a', 145),
+      new Token(TokenType.Has, 'has', 147),
+      new Token(TokenType.Identifier, 'x', 151),
+      new Token(TokenType.Eq, '=', 153),
+      new Token(TokenType.Numeric, '5', 155),
+
+      new Token(TokenType.Or, 'or', 157),
+      new Token(TokenType.Identifier, 'a', 160),
+      new Token(TokenType.Not, 'not', 162),
+      new Token(TokenType.Has, 'has', 166),
+      new Token(TokenType.Numeric, '9', 170),
+      new Token(TokenType.EOF, '\0', 171),
     ];
 
     expected.forEach((tok) => {

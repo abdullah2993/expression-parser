@@ -1,5 +1,12 @@
 import {
-  BinaryExpression, CaseExpression, Expression, FunctionCallExpression, IdentifierExpression, ValueExpression,
+  BinaryExpression,
+  CaseExpression,
+  InExpression,
+  Expression,
+  FunctionCallExpression,
+  IdentifierExpression,
+  ValueExpression,
+  HasExpression,
 } from './ast';
 import { Lexer, Tokenizer } from './lexer';
 import { Token, TokenType } from './token';
@@ -17,6 +24,8 @@ const precedences: PrecedenceMap = {
   [TokenType.Gt]: 5,
   [TokenType.Gte]: 5,
   [TokenType.Between]: 6,
+  [TokenType.In]: 7,
+  [TokenType.Has]: 7,
   [TokenType.Is]: 7,
   [TokenType.Plus]: 8,
   [TokenType.Minus]: 8,
@@ -38,7 +47,9 @@ export class Parser {
     return this.precedenceMap[this.peekToken.type] ?? 0;
   }
 
-  private prefixParsers: { [key in TokenType]?: (...args: any[]) => Expression };
+  private prefixParsers: {
+    [key in TokenType]?: (...args: any[]) => Expression;
+  };
 
   private infixParsers: { [key in TokenType]?: (...args: any[]) => Expression };
 
@@ -70,6 +81,9 @@ export class Parser {
       [TokenType.And]: this.parseInfixExpression.bind(this),
       [TokenType.Or]: this.parseInfixExpression.bind(this),
       [TokenType.Is]: this.parseIsExpression.bind(this),
+      [TokenType.In]: this.parseInExpression.bind(this),
+      [TokenType.Not]: this.parseNotExpression.bind(this),
+      [TokenType.Has]: this.parseHasExpression.bind(this),
       [TokenType.Between]: this.parseBetweenExpression.bind(this),
       [TokenType.Lparn]: this.parseCallExpression.bind(this),
     };
@@ -86,8 +100,10 @@ export class Parser {
     }
 
     let leftExpression = prefixParser();
-
-    while (precedence < this.peekPrecedence && !this.currentTokenIs(TokenType.EOF)) {
+    while (
+      precedence < this.peekPrecedence &&
+      !this.currentTokenIs(TokenType.EOF)
+    ) {
       const infixParser = this.infixParsers[this.peekToken.type];
       if (!infixParser) {
         return leftExpression;
@@ -152,7 +168,67 @@ export class Parser {
     const { currentPrecedence } = this;
     const op = this.currentToken.type;
     this.nextToken();
-    return new BinaryExpression(op, left, this.parseExpression(currentPrecedence));
+    return new BinaryExpression(
+      op,
+      left,
+      this.parseExpression(currentPrecedence)
+    );
+  }
+
+  private parseNotExpression(left: Expression): Expression {
+    if (!this.peekTokenIs(TokenType.In) && !this.peekTokenIs(TokenType.Has)) {
+      throw new Error(`Expected in or has keyword but got ${this.peekToken}`);
+    }
+    const isHasExpression = this.peekTokenIs(TokenType.Has);
+    this.nextToken();
+    return isHasExpression
+      ? this.parseHasExpression(left, TokenType.Not)
+      : this.parseInExpression(left, TokenType.Not);
+  }
+
+  private parseInExpression(
+    name: Expression,
+    tokenType?: TokenType
+  ): Expression {
+    const values: ValueExpression[] = [];
+    if (!this.expectPeekToken(TokenType.Lparn)) {
+      throw new Error(`Expected ( but got ${this.peekToken}`);
+    }
+    while (!this.peekTokenIs(TokenType.Rparn)) {
+      this.nextToken();
+      if (
+        this.currentTokenIs(TokenType.String) ||
+        this.currentTokenIs(TokenType.Numeric)
+      ) {
+        values.push(this.parseExpression() as ValueExpression);
+      }
+      if (this.currentTokenIs(TokenType.EOF)) {
+        throw new Error(`Expected ) but got EOF`);
+      }
+    }
+    return new InExpression(name as IdentifierExpression, values, tokenType);
+  }
+
+  private parseHasExpression(
+    name: Expression,
+    tokenType?: TokenType
+  ): Expression {
+    if (
+      !this.peekTokenIs(TokenType.Identifier) &&
+      !this.peekTokenIs(TokenType.String) &&
+      !this.peekTokenIs(TokenType.Numeric)
+    ) {
+      throw new Error(
+        `Expected identifier or string/number but got ${this.peekToken}`
+      );
+    }
+    this.nextToken();
+    const expression = this.parseExpression(3);
+    return new HasExpression(
+      name as IdentifierExpression,
+      expression,
+      tokenType
+    );
   }
 
   private parseIsExpression(left: Expression): Expression {
@@ -174,7 +250,7 @@ export class Parser {
     return new BinaryExpression(
       TokenType.And,
       new BinaryExpression(TokenType.Gte, left, min),
-      new BinaryExpression(TokenType.Lte, left, max),
+      new BinaryExpression(TokenType.Lte, left, max)
     );
   }
 
@@ -184,7 +260,10 @@ export class Parser {
     while (!this.currentTokenIs(TokenType.Rparn)) {
       args.push(this.parseExpression());
       this.nextToken();
-      if (!this.currentTokenIs(TokenType.Comma) && !this.currentTokenIs(TokenType.Rparn)) {
+      if (
+        !this.currentTokenIs(TokenType.Comma) &&
+        !this.currentTokenIs(TokenType.Rparn)
+      ) {
         throw new Error(`Expected , or ) got ${this.currentToken}`);
       }
     }
@@ -192,12 +271,15 @@ export class Parser {
   }
 
   private parseCaseExpression(): Expression {
-    const conditions: { when: Expression, then: Expression }[] = [];
+    const conditions: { when: Expression; then: Expression }[] = [];
     let last;
     if (!this.peekTokenIs(TokenType.When)) {
       throw new Error(`Expected when got ${this.currentToken}`);
     }
-    while (!this.peekTokenIs(TokenType.End) && !this.peekTokenIs(TokenType.Else)) {
+    while (
+      !this.peekTokenIs(TokenType.End) &&
+      !this.peekTokenIs(TokenType.Else)
+    ) {
       this.expectPeekToken(TokenType.When);
       this.nextToken();
       const when = this.parseExpression();
