@@ -8,7 +8,6 @@ export type Expression =
   | IdentifierExpression
   | CaseExpression
   | InExpression
-  | HasExpression
   | GroupExpression
   | NotExpression;
 
@@ -21,7 +20,6 @@ export interface Node {
     | 'IdentifierExpression'
     | 'CaseExpression'
     | 'InExpression'
-    | 'HasExpression'
     | 'GroupExpression'
     | 'NotExpression';
 }
@@ -75,15 +73,6 @@ export class InExpression implements Node {
   ) {}
 
   readonly type = 'InExpression';
-}
-
-export class HasExpression implements Node {
-  constructor(
-    public identifier: IdentifierExpression,
-    public condition: Expression
-  ) {}
-
-  readonly type = 'HasExpression';
 }
 
 export class NotExpression implements Node {
