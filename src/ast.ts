@@ -25,11 +25,7 @@ export interface Node {
 }
 
 export class BinaryExpression implements Node {
-  constructor(
-    public operator: TokenType,
-    public left: Expression,
-    public right: Expression
-  ) {}
+  constructor(public operator: TokenType, public left: Expression, public right: Expression) {}
 
   readonly type = 'BinaryExpression';
 }
@@ -58,10 +54,7 @@ export class IdentifierExpression implements Node {
   readonly type = 'IdentifierExpression';
 }
 export class CaseExpression implements Node {
-  constructor(
-    public conditions: { when: Expression; then: Expression }[],
-    public last?: Expression
-  ) {}
+  constructor(public conditions: { when: Expression; then: Expression }[], public last?: Expression) {}
 
   readonly type = 'CaseExpression';
 }

@@ -100,10 +100,7 @@ export class Parser {
       throw new Error(`Unexpected start of expression: ${this.currentToken}`);
     }
     let leftExpression = prefixParser();
-    while (
-      precedence < this.peekPrecedence &&
-      !this.currentTokenIs(TokenType.EOF)
-    ) {
+    while (precedence < this.peekPrecedence && !this.currentTokenIs(TokenType.EOF)) {
       const infixParser = this.infixParsers[this.peekToken.type];
       if (!infixParser) {
         return leftExpression;
@@ -168,11 +165,7 @@ export class Parser {
     const { currentPrecedence } = this;
     const op = this.currentToken.type;
     this.nextToken();
-    return new BinaryExpression(
-      op,
-      left,
-      this.parseExpression(currentPrecedence)
-    );
+    return new BinaryExpression(op, left, this.parseExpression(currentPrecedence));
   }
 
   private parseNotExpression(left: Expression): Expression {
@@ -221,10 +214,7 @@ export class Parser {
     while (!this.currentTokenIs(TokenType.Rparn)) {
       args.push(this.parseExpression());
       this.nextToken();
-      if (
-        !this.currentTokenIs(TokenType.Comma) &&
-        !this.currentTokenIs(TokenType.Rparn)
-      ) {
+      if (!this.currentTokenIs(TokenType.Comma) && !this.currentTokenIs(TokenType.Rparn)) {
         throw new Error(`Expected , or ) got ${this.currentToken}`);
       }
     }
@@ -244,10 +234,7 @@ export class Parser {
     if (!this.peekTokenIs(TokenType.When)) {
       throw new Error(`Expected when got ${this.currentToken}`);
     }
-    while (
-      !this.peekTokenIs(TokenType.End) &&
-      !this.peekTokenIs(TokenType.Else)
-    ) {
+    while (!this.peekTokenIs(TokenType.End) && !this.peekTokenIs(TokenType.Else)) {
       this.expectPeekToken(TokenType.When);
       this.nextToken();
       const when = this.parseExpression();

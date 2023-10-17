@@ -33,12 +33,7 @@ describe('Evaluator tests', () => {
 
   it('should validate string range', () => {
     const val = { a: 'xyz', b: 'asd123asd' };
-    expect(
-      evaluateObject(
-        'length(a) between 1 and 3 and length(b) between 1 and 9',
-        val
-      )
-    ).toBe(true);
+    expect(evaluateObject('length(a) between 1 and 3 and length(b) between 1 and 9', val)).toBe(true);
   });
 
   it('should check string length', () => {
@@ -58,32 +53,20 @@ describe('Evaluator tests', () => {
 
   it('should check string is not null and has length between 4 and 10', () => {
     const val = { a: '1234' };
-    expect(
-      evaluateObject('a is not null and length(a) between 4 and 10', val)
-    ).toBe(true);
+    expect(evaluateObject('a is not null and length(a) between 4 and 10', val)).toBe(true);
   });
 
   it('should check string is not null and has length between 4 and 10', () => {
     let val: any = { a: null };
-    expect(
-      evaluateObject('a is not null and length(a) between 4 and 10', val)
-    ).toBe(false);
+    expect(evaluateObject('a is not null and length(a) between 4 and 10', val)).toBe(false);
     val = { a: '123' };
-    expect(
-      evaluateObject('a is not null and length(a) between 4 and 10', val)
-    ).toBe(false);
+    expect(evaluateObject('a is not null and length(a) between 4 and 10', val)).toBe(false);
     val = { a: '1234' };
-    expect(
-      evaluateObject('a is not null and length(a) between 4 and 10', val)
-    ).toBe(true);
+    expect(evaluateObject('a is not null and length(a) between 4 and 10', val)).toBe(true);
     val = { a: '1234567890' };
-    expect(
-      evaluateObject('a is not null and length(a) between 4 and 10', val)
-    ).toBe(true);
+    expect(evaluateObject('a is not null and length(a) between 4 and 10', val)).toBe(true);
     val = { a: '12345678901' };
-    expect(
-      evaluateObject('a is not null and length(a) between 4 and 10', val)
-    ).toBe(false);
+    expect(evaluateObject('a is not null and length(a) between 4 and 10', val)).toBe(false);
   });
 
   it('should compare variables', () => {
@@ -107,26 +90,13 @@ describe('Evaluator tests', () => {
   });
   it('should evaluate case expressions', () => {
     let val: any = { a: 1, b: 3 };
-    expect(
-      evaluateObject('case when a > 1 then true else false end', val)
-    ).toBe(false);
+    expect(evaluateObject('case when a > 1 then true else false end', val)).toBe(false);
     val = { a: 2, b: 3 };
-    expect(
-      evaluateObject('case when a > 1 then true else false end', val)
-    ).toBe(true);
+    expect(evaluateObject('case when a > 1 then true else false end', val)).toBe(true);
     val = { a: 2, b: 3 };
-    expect(
-      evaluateObject(
-        'case when a = 1 then 1 when a = 2 then 1 else false end',
-        val
-      )
-    ).toBe(1);
-    expect(
-      evaluateObject('case when a = 1 then 1 when a = 2 then 2 else 3 end', val)
-    ).toBe(2);
-    expect(
-      evaluateObject('case when a = 1 then 1 when a = 3 then 3 else 2 end', val)
-    ).toBe(2);
+    expect(evaluateObject('case when a = 1 then 1 when a = 2 then 1 else false end', val)).toBe(1);
+    expect(evaluateObject('case when a = 1 then 1 when a = 2 then 2 else 3 end', val)).toBe(2);
+    expect(evaluateObject('case when a = 1 then 1 when a = 3 then 3 else 2 end', val)).toBe(2);
     const rule = `case
                     when light = 'Green' then 'Go'
                     when light = 'Yellow' then 'Should Stop'
@@ -147,13 +117,9 @@ describe('Evaluator tests', () => {
     expect(evaluateObject(`a in (1,2) or b in (2,4)`, val)).toBe(true);
     expect(evaluateObject(`a in (2,3) or b in (4,5)`, val)).toBe(false);
     val = { a: 3 };
-    expect(() => evaluateObject(`b in (1,2,3,4,5)`, val)).toThrowError(
-      'b is not defined'
-    );
+    expect(() => evaluateObject(`b in (1,2,3,4,5)`, val)).toThrowError('b is not defined');
     val = { a: 3 };
-    expect(() => evaluateObject(`(1,2,3,4,5) in b`, val)).toThrowError(
-      'b is not defined'
-    );
+    expect(() => evaluateObject(`(1,2,3,4,5) in b`, val)).toThrowError('b is not defined');
     val = { a: ['one', 'two', 'three'] };
     expect(evaluateObject(`a in (1,2,3)`, val)).toBe(false);
     expect(evaluateObject(`a in ('one', 'two', 'three')`, val)).toBe(true);
@@ -162,9 +128,7 @@ describe('Evaluator tests', () => {
     val = { a: 'green' };
     expect(evaluateObject(`a not in ('blue','green','red')`, val)).toBe(false);
     val = { a: 'green' };
-    expect(() =>
-      evaluateObject(`b not in ('blue','green','red')`, val)
-    ).toThrowError('b is not defined');
+    expect(() => evaluateObject(`b not in ('blue','green','red')`, val)).toThrowError('b is not defined');
     val = { a: ['green'] };
     expect(evaluateObject(`('blue','green','red') in a`, val)).toBe(false);
     val = { a: ['green'] };
@@ -174,12 +138,10 @@ describe('Evaluator tests', () => {
     val = { a: 'green' };
     expect(evaluateObject(`a in ('green','blue','yellow')`, val)).toBe(true);
     val = { a: 'green' };
-    expect(() =>
-      evaluateObject(`b in ('green','blue','yellow')`, val)
-    ).toThrowError('b is not defined');
+    expect(() => evaluateObject(`b in ('green','blue','yellow')`, val)).toThrowError('b is not defined');
     val = { a: 'green' };
-    expect(() =>
-      evaluateObject(`('green','blue','yellow') not in a`, val)
-    ).toThrowError('Right side of IN expression must be an array');
+    expect(() => evaluateObject(`('green','blue','yellow') not in a`, val)).toThrowError(
+      'Right side of IN expression must be an array'
+    );
   });
 });

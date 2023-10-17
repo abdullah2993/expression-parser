@@ -82,10 +82,7 @@ export class Lexer {
           } else {
             token = this.getToken(identType);
           }
-        } else if (
-          Lexer.isNumber(this.currentChar) ||
-          Lexer.isDot(this.currentChar)
-        ) {
+        } else if (Lexer.isNumber(this.currentChar) || Lexer.isDot(this.currentChar)) {
           const num = this.readNumber();
           token = this.getToken(TokenType.Numeric, num);
         } else {
@@ -139,10 +136,7 @@ export class Lexer {
   private readNumber(): string {
     const start = this.position;
     let haveDecimal = Lexer.isDot(this.currentChar);
-    while (
-      Lexer.isNumber(this.peekChar()) ||
-      (Lexer.isDot(this.peekChar()) && !haveDecimal)
-    ) {
+    while (Lexer.isNumber(this.peekChar()) || (Lexer.isDot(this.peekChar()) && !haveDecimal)) {
       if (Lexer.isDot(this.currentChar)) {
         haveDecimal = true;
       }

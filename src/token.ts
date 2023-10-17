@@ -44,11 +44,7 @@ export enum TokenType {
 }
 
 export class Token {
-  constructor(
-    public type: TokenType,
-    public literal: string,
-    public position: Number
-  ) {}
+  constructor(public type: TokenType, public literal: string, public position: Number) {}
 
   toString(): string {
     return `{ type: ${this.type}, literal: ${this.literal} } as position: ${this.position}.`;
