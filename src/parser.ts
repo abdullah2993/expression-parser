@@ -100,9 +100,6 @@ export class Parser {
       throw new Error(`Unexpected start of expression: ${this.currentToken}`);
     }
     let leftExpression = prefixParser();
-    // console.log('---- parseExpression ----');
-    // console.log(this.currentToken, this.peekToken);
-    // console.log(precedence, this.peekPrecedence);
     while (
       precedence < this.peekPrecedence &&
       !this.currentTokenIs(TokenType.EOF)
