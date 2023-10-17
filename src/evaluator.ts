@@ -134,7 +134,6 @@ function evaluateInExpression(
       throw new Error(`${right.name} is not defined`);
     }
     if (!Array.isArray(rightValues)) {
-      // TODO
       throw new Error('Right side of IN expression must be an array');
     }
     return leftValue.every((v) => rightValues.indexOf(v) !== -1);
