@@ -7,6 +7,8 @@ import {
   IdentifierExpression,
   ValueExpression,
   HasExpression,
+  GroupExpression,
+  NotExpression,
 } from './ast';
 import { Lexer, Tokenizer } from './lexer';
 import { Token, TokenType } from './token';
@@ -31,6 +33,7 @@ const precedences: PrecedenceMap = {
   [TokenType.Minus]: 8,
   [TokenType.Mul]: 9,
   [TokenType.Div]: 9,
+  [TokenType.Comma]: 9,
   [TokenType.Lparn]: 10,
 };
 
@@ -86,6 +89,7 @@ export class Parser {
       [TokenType.Has]: this.parseHasExpression.bind(this),
       [TokenType.Between]: this.parseBetweenExpression.bind(this),
       [TokenType.Lparn]: this.parseCallExpression.bind(this),
+      [TokenType.Comma]: this.parseCommaExpression.bind(this),
     };
   }
 
@@ -98,8 +102,10 @@ export class Parser {
     if (!prefixParser) {
       throw new Error(`Unexpected start of expression: ${this.currentToken}`);
     }
-
     let leftExpression = prefixParser();
+    // console.log('---- parseExpression ----');
+    // console.log(this.currentToken, this.peekToken);
+    // console.log(precedence, this.peekPrecedence);
     while (
       precedence < this.peekPrecedence &&
       !this.currentTokenIs(TokenType.EOF)
@@ -181,38 +187,22 @@ export class Parser {
     }
     const isHasExpression = this.peekTokenIs(TokenType.Has);
     this.nextToken();
-    return isHasExpression
-      ? this.parseHasExpression(left, TokenType.Not)
-      : this.parseInExpression(left, TokenType.Not);
+    const expression = isHasExpression
+      ? this.parseHasExpression(left)
+      : this.parseInExpression(left);
+    return new NotExpression(expression);
   }
 
-  private parseInExpression(
-    name: Expression,
-    tokenType?: TokenType
-  ): Expression {
-    const values: ValueExpression[] = [];
-    if (!this.expectPeekToken(TokenType.Lparn)) {
-      throw new Error(`Expected ( but got ${this.peekToken}`);
-    }
-    while (!this.peekTokenIs(TokenType.Rparn)) {
-      this.nextToken();
-      if (
-        this.currentTokenIs(TokenType.String) ||
-        this.currentTokenIs(TokenType.Numeric)
-      ) {
-        values.push(this.parseExpression() as ValueExpression);
-      }
-      if (this.currentTokenIs(TokenType.EOF)) {
-        throw new Error(`Expected ) but got EOF`);
-      }
-    }
-    return new InExpression(name as IdentifierExpression, values, tokenType);
+  private parseInExpression(left: Expression | Expression[]): Expression {
+    this.nextToken();
+    const expression = this.parseExpression();
+    return new InExpression(
+      left as GroupExpression | IdentifierExpression,
+      expression as GroupExpression | IdentifierExpression
+    );
   }
 
-  private parseHasExpression(
-    name: Expression,
-    tokenType?: TokenType
-  ): Expression {
+  private parseHasExpression(name: Expression): Expression {
     if (
       !this.peekTokenIs(TokenType.Identifier) &&
       !this.peekTokenIs(TokenType.String) &&
@@ -224,11 +214,7 @@ export class Parser {
     }
     this.nextToken();
     const expression = this.parseExpression(precedences[TokenType.Not]);
-    return new HasExpression(
-      name as IdentifierExpression,
-      expression,
-      tokenType
-    );
+    return new HasExpression(name as IdentifierExpression, expression);
   }
 
   private parseIsExpression(left: Expression): Expression {
@@ -268,6 +254,13 @@ export class Parser {
       }
     }
     return new FunctionCallExpression(fn.name, args);
+  }
+
+  private parseCommaExpression(left: Expression): Expression {
+    this.nextToken();
+    const right = this.parseExpression() as GroupExpression;
+    const values = right.type === 'GroupExpression' ? right.values : [right];
+    return new GroupExpression([left, ...values]);
   }
 
   private parseCaseExpression(): Expression {

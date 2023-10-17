@@ -5,6 +5,7 @@ import {
   InExpression,
   HasExpression,
   Expression,
+  GroupExpression,
 } from './ast';
 import { parse } from './parser';
 import { TokenType } from './token';
@@ -118,14 +119,30 @@ function evaluateInExpression(
   expression: InExpression,
   context?: (identifier: string) => any
 ): any {
-  const operator = expression.operator;
-  const value = evaluateExpression(expression.identifier, context);
-  if (value == null) {
-    return false;
+  const { left, right } = expression;
+  if (left.type === 'GroupExpression') {
+    const leftValue = evaluateExpression(left, context);
+    const values = evaluateExpression(right, context);
+    if (!Array.isArray(leftValue)) {
+      throw new Error('Invalid left side of IN expression');
+    } else {
+      return leftValue.every((v) => values.includes(v));
+    }
+  } else if (left.type === 'IdentifierExpression') {
+    const leftValue = evaluateExpression(left, context);
+    const values = evaluateExpression(right, context);
+    if (Array.isArray(leftValue)) {
+      return leftValue.every((v) => values.includes(v));
+    } else if (typeof leftValue === 'object' && leftValue !== null) {
+      throw new Error('Invalid left side of IN expression');
+    } else if (leftValue !== null && leftValue !== undefined) {
+      return values.includes(leftValue);
+    } else {
+      throw new Error(`${left.name} is not defined`);
+    }
+  } else {
+    throw new Error('Invalid left side of IN expression');
   }
-  const values = expression.values.map((v) => evaluateExpression(v, context));
-  const index = values.indexOf(value);
-  return operator === TokenType.Not ? index === -1 : index !== -1;
 }
 
 function evaluateHasExpression(
@@ -139,7 +156,7 @@ function evaluateHasExpression(
   }
 
   const isValue = expression.condition.type === 'ValueExpression';
-  const condition = isArray
+  return isArray
     ? value.some((v: any) =>
         isValue
           ? v === evaluateExpression(expression.condition, context)
@@ -148,7 +165,14 @@ function evaluateHasExpression(
     : isValue
     ? value === evaluateExpression(expression.condition, context)
     : evaluateExpression(expression.condition, (name: any) => value[name]);
-  return expression.operator === TokenType.Not ? !condition : condition;
+}
+
+function evaluateGroupExpression(
+  expression: GroupExpression,
+  context?: (identifier: string) => any
+): any {
+  const values = expression.values.map((v) => evaluateExpression(v, context));
+  return values;
 }
 
 function evaluateExpression(
@@ -173,6 +197,10 @@ function evaluateExpression(
       return evaluateInExpression(expression, context);
     case 'HasExpression':
       return evaluateHasExpression(expression, context);
+    case 'GroupExpression':
+      return evaluateGroupExpression(expression, context);
+    case 'NotExpression':
+      return !evaluateExpression(expression.expression, context);
     default:
       throw new Error(`Invalid AST node${expression}`);
   }

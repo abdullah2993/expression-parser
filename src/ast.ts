@@ -8,7 +8,9 @@ export type Expression =
   | IdentifierExpression
   | CaseExpression
   | InExpression
-  | HasExpression;
+  | HasExpression
+  | GroupExpression
+  | NotExpression;
 
 export interface Node {
   readonly type:
@@ -19,7 +21,9 @@ export interface Node {
     | 'IdentifierExpression'
     | 'CaseExpression'
     | 'InExpression'
-    | 'HasExpression';
+    | 'HasExpression'
+    | 'GroupExpression'
+    | 'NotExpression';
 }
 
 export class BinaryExpression implements Node {
@@ -66,9 +70,8 @@ export class CaseExpression implements Node {
 
 export class InExpression implements Node {
   constructor(
-    public identifier: IdentifierExpression,
-    public values: ValueExpression[],
-    public operator?: TokenType
+    public left: IdentifierExpression | GroupExpression,
+    public right: IdentifierExpression | GroupExpression
   ) {}
 
   readonly type = 'InExpression';
@@ -77,9 +80,20 @@ export class InExpression implements Node {
 export class HasExpression implements Node {
   constructor(
     public identifier: IdentifierExpression,
-    public condition: Expression,
-    public operator?: TokenType
+    public condition: Expression
   ) {}
 
   readonly type = 'HasExpression';
+}
+
+export class NotExpression implements Node {
+  constructor(public expression: Expression) {}
+
+  readonly type = 'NotExpression';
+}
+
+export class GroupExpression implements Node {
+  constructor(public values: Expression[]) {}
+
+  readonly type = 'GroupExpression';
 }

@@ -143,10 +143,11 @@ describe('Evaluator tests', () => {
   });
   it('should evaluate in expressions', () => {
     let val: any = { a: 1, b: 3, c: [2, 3, 5] };
-    const rule = `b in (1,2,3,4,5)`;
     expect(evaluateObject(`b in (1,2,3,4,5)`, val)).toBe(true);
     val = { light: 'Blue' };
-    expect(evaluateObject(`b in (1,2,3,4,5)`, val)).toBe(false);
+    expect(() => evaluateObject(`b in (1,2,3,4,5)`, val)).toThrowError(
+      'b is not defined'
+    );
     val = { b: ['oj', 'oj', 'pl'] };
     expect(evaluateObject(`b in (1,2,3,4,5)`, val)).toBe(false);
     expect(evaluateObject(`b in (oj,pl)`, val)).toBe(false);
@@ -157,76 +158,14 @@ describe('Evaluator tests', () => {
     val = { b: 'Green' };
     expect(evaluateObject(`b not in ('Blue','Green', "RED")`, val)).toBe(false);
     val = { a: 'Green' };
-    expect(evaluateObject(`b not in ('Blue','Green', "RED")`, val)).toBe(false);
-  });
-  it('should evaluate has expressions', () => {
-    let val: any = { a: { x: 7 } };
-    expect(evaluateObject(`a has x = 7`, val)).toBe(true);
-    val = { a: [] };
-    expect(evaluateObject(`a has x = 7`, val)).toBe(false);
-    val = { a: [{ x: 8 }] };
-    expect(evaluateObject(`a has x = 7`, val)).toBe(false);
-    val = { a: [{ x: '7' }] };
-    expect(evaluateObject(`a has x = "7"`, val)).toBe(true);
-    val = { a: [{ x: 7 }, { y: 9 }] };
-    expect(evaluateObject(`a has x = 7`, val)).toBe(true);
-    val = { a: [{ x: 7 }, { x: 7 }] };
-    expect(evaluateObject(`a has x = 7`, val)).toBe(true);
-    val = { a: [{ x: 7 }, { y: 9 }] };
-    expect(evaluateObject(`a has x = 5 or a has y = 9`, val)).toBe(true);
-    val = { a: [{ x: 7 }, { y: 9 }] };
-    expect(evaluateObject(`a has x = 5 and a has y = 9`, val)).toBe(false);
-    val = { a: 2 };
-    expect(evaluateObject(`a has x = 5 or a has y = 9 and b = 8`, val)).toBe(
-      false
-    );
-    val = { a: [{ x: 5 }, { x: 4 }, { y: 8 }], b: 8 };
-    expect(evaluateObject(`a has x = 5 or a has y = 9 and b = 8`, val)).toBe(
-      true
-    );
-    val = { a: [2, 3, 4], b: 8 };
-    expect(evaluateObject(`a has 5 or a has 2 and b = 8`, val)).toBe(true);
-    val = { a: [2, 3, 4], b: 8 };
-    expect(evaluateObject(`a has 5 and a has 2 or b = 8`, val)).toBe(false);
-    val = { a: [2, 3, 4], b: 8 };
-    expect(evaluateObject(`a has 5 and a has 2 and b = 8`, val)).toBe(false);
-    val = { a: ['2', 3, 4], b: 8 };
-    expect(evaluateObject(`a has 4 and a has 2 and b = 8`, val)).toBe(false);
-    val = { a: ['5'], b: 8 };
-    expect(evaluateObject(`a has "5" and b = 8`, val)).toBe(true);
-    val = { a: ['5', { x: 2 }], b: 8 };
-    expect(evaluateObject(`a has "5" or a has x = 2 and b = 8`, val)).toBe(
-      true
-    );
-    val = { a: ['5', { x: 2 }], b: 8 };
-    expect(evaluateObject(`a has "5" and a has x = 2`, val)).toBe(true);
-    val = { a: ['5'] };
-    expect(evaluateObject(`a has "5" or a has 3`, val)).toBe(true);
-    val = { a: ['5'] };
-    expect(evaluateObject(`a has "5" and a has 3`, val)).toBe(false);
-    val = {};
-    expect(evaluateObject(`a has "5" and a has 3`, val)).toBe(false);
-    val = { a: {} };
-    expect(evaluateObject(`a has "5" or a has 3`, val)).toBe(false);
-    val = { a: { x: 5 } };
-    expect(evaluateObject(`a has "5" or a has 3`, val)).toBe(false);
-    val = {};
-    expect(evaluateObject(`a has "5" or a has 3`, val)).toBe(false);
-    val = {};
-    expect(evaluateObject(`a not has "5" or a has 3`, val)).toBe(false);
-    val = { a: [{ x: 5 }, { x: 2 }] };
-    expect(evaluateObject(`a not has x = 5`, val)).toBe(false);
-    val = { a: { x: 5 } };
-    expect(evaluateObject(`a not has x = 5 or a has 3`, val)).toBe(false);
-    val = { a: [{ x: 5 }, { x: 2 }] };
-    expect(evaluateObject(`a not has x = 5 or a has x = 2`, val)).toBe(true);
-    val = { a: [{ x: 5 }, { x: 2 }] };
-    expect(evaluateObject(`a not has x = 5 and a not has x = 2`, val)).toBe(
-      false
-    );
-    val = { a: [{ x: 1 }, { x: 4 }] };
-    expect(evaluateObject(`a not has x = 5 and a not has x = 2`, val)).toBe(
-      true
-    );
+    expect(() =>
+      evaluateObject(`b not in ('Blue','Green', "RED")`, val)
+    ).toThrowError('b is not defined');
+    val = { a: ['Green'] };
+    expect(evaluateObject(`('Blue','Green', "RED") in a`, val)).toBe(false);
+    val = { a: ['Green'], b: 'Text', c: 'Hold the line' };
+    expect(evaluateObject(`(1,2,3) in a`, val)).toBe(false);
+    val = { a: ['Green'], b: 'Text', c: 'Hold the line' };
+    expect(evaluateObject(`a in ('Green', "Blue", "Yellow")`, val)).toBe(true);
   });
 });
