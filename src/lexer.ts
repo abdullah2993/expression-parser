@@ -201,7 +201,6 @@ export class Lexer {
     end: TokenType.End,
     then: TokenType.Then,
     in: TokenType.In,
-    has: TokenType.Has,
   };
 
   private static resolveIdentifier(ident: string): TokenType {

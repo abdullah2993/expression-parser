@@ -6,7 +6,6 @@ import {
   FunctionCallExpression,
   IdentifierExpression,
   ValueExpression,
-  HasExpression,
   GroupExpression,
   NotExpression,
 } from './ast';
@@ -27,7 +26,6 @@ const precedences: PrecedenceMap = {
   [TokenType.Gte]: 5,
   [TokenType.Between]: 6,
   [TokenType.In]: 7,
-  [TokenType.Has]: 7,
   [TokenType.Is]: 7,
   [TokenType.Plus]: 8,
   [TokenType.Minus]: 8,
@@ -86,7 +84,6 @@ export class Parser {
       [TokenType.Is]: this.parseIsExpression.bind(this),
       [TokenType.In]: this.parseInExpression.bind(this),
       [TokenType.Not]: this.parseNotExpression.bind(this),
-      [TokenType.Has]: this.parseHasExpression.bind(this),
       [TokenType.Between]: this.parseBetweenExpression.bind(this),
       [TokenType.Lparn]: this.parseCallExpression.bind(this),
       [TokenType.Comma]: this.parseCommaExpression.bind(this),
@@ -182,39 +179,20 @@ export class Parser {
   }
 
   private parseNotExpression(left: Expression): Expression {
-    if (!this.peekTokenIs(TokenType.In) && !this.peekTokenIs(TokenType.Has)) {
-      throw new Error(`Expected in or has keyword but got ${this.peekToken}`);
+    if (!this.peekTokenIs(TokenType.In)) {
+      throw new Error(`Expected in keyword but got ${this.peekToken}`);
     }
-    const isHasExpression = this.peekTokenIs(TokenType.Has);
     this.nextToken();
-    const expression = isHasExpression
-      ? this.parseHasExpression(left)
-      : this.parseInExpression(left);
-    return new NotExpression(expression);
+    return new NotExpression(this.parseInExpression(left));
   }
 
   private parseInExpression(left: Expression | Expression[]): Expression {
     this.nextToken();
-    const expression = this.parseExpression();
+    const expression = this.parseExpression(this.currentPrecedence);
     return new InExpression(
       left as GroupExpression | IdentifierExpression,
       expression as GroupExpression | IdentifierExpression
     );
-  }
-
-  private parseHasExpression(name: Expression): Expression {
-    if (
-      !this.peekTokenIs(TokenType.Identifier) &&
-      !this.peekTokenIs(TokenType.String) &&
-      !this.peekTokenIs(TokenType.Numeric)
-    ) {
-      throw new Error(
-        `Expected identifier or string/number but got ${this.peekToken}`
-      );
-    }
-    this.nextToken();
-    const expression = this.parseExpression(precedences[TokenType.Not]);
-    return new HasExpression(name as IdentifierExpression, expression);
   }
 
   private parseIsExpression(left: Expression): Expression {

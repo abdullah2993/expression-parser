@@ -3,7 +3,6 @@ import {
   BinaryExpression,
   CaseExpression,
   InExpression,
-  HasExpression,
   Expression,
   GroupExpression,
 } from './ast';
@@ -115,56 +114,48 @@ function evaluateCaseExpression(
   return false;
 }
 
+const invalidLeftSide = 'Invalid left side of IN expression';
 function evaluateInExpression(
   expression: InExpression,
   context?: (identifier: string) => any
 ): any {
   const { left, right } = expression;
-  if (left.type === 'GroupExpression') {
-    const leftValue = evaluateExpression(left, context);
-    const values = evaluateExpression(right, context);
+  const leftValue = evaluateExpression(left, context);
+  const rightValues = evaluateExpression(right, context);
+
+  if (
+    left.type === 'GroupExpression' &&
+    right.type === 'IdentifierExpression'
+  ) {
     if (!Array.isArray(leftValue)) {
-      throw new Error('Invalid left side of IN expression');
-    } else {
-      return leftValue.every((v) => values.includes(v));
+      throw new Error(invalidLeftSide);
     }
-  } else if (left.type === 'IdentifierExpression') {
-    const leftValue = evaluateExpression(left, context);
-    const values = evaluateExpression(right, context);
-    if (Array.isArray(leftValue)) {
-      return leftValue.every((v) => values.includes(v));
-    } else if (typeof leftValue === 'object' && leftValue !== null) {
-      throw new Error('Invalid left side of IN expression');
-    } else if (leftValue !== null && leftValue !== undefined) {
-      return values.includes(leftValue);
-    } else {
+    if (rightValues == null) {
+      throw new Error(`${right.name} is not defined`);
+    }
+    if (!Array.isArray(rightValues)) {
+      // TODO
+      throw new Error('Right side of IN expression must be an array');
+    }
+    return leftValue.every((v) => rightValues.indexOf(v) !== -1);
+  } else if (
+    left.type === 'IdentifierExpression' &&
+    right.type === 'GroupExpression'
+  ) {
+    if (leftValue == null) {
       throw new Error(`${left.name} is not defined`);
+    } else {
+      if (Array.isArray(leftValue)) {
+        return leftValue.every((v) => rightValues.includes(v));
+      } else if (typeof leftValue === 'object' && leftValue !== null) {
+        throw new Error(invalidLeftSide);
+      } else {
+        return rightValues.includes(leftValue);
+      }
     }
   } else {
-    throw new Error('Invalid left side of IN expression');
+    throw new Error('Invalid left or right side of IN expression');
   }
-}
-
-function evaluateHasExpression(
-  expression: HasExpression,
-  context?: (identifier: string) => any
-): any {
-  const value = evaluateExpression(expression.identifier, context);
-  const isArray = Array.isArray(value);
-  if (!isArray && (typeof value !== 'object' || value === null)) {
-    return false;
-  }
-
-  const isValue = expression.condition.type === 'ValueExpression';
-  return isArray
-    ? value.some((v: any) =>
-        isValue
-          ? v === evaluateExpression(expression.condition, context)
-          : evaluateExpression(expression.condition, (name: any) => v[name])
-      )
-    : isValue
-    ? value === evaluateExpression(expression.condition, context)
-    : evaluateExpression(expression.condition, (name: any) => value[name]);
 }
 
 function evaluateGroupExpression(
@@ -195,8 +186,6 @@ function evaluateExpression(
       return evaluateCaseExpression(expression, context);
     case 'InExpression':
       return evaluateInExpression(expression, context);
-    case 'HasExpression':
-      return evaluateHasExpression(expression, context);
     case 'GroupExpression':
       return evaluateGroupExpression(expression, context);
     case 'NotExpression':

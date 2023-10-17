@@ -142,30 +142,44 @@ describe('Evaluator tests', () => {
     expect(evaluateObject(rule, val)).toBe('Invalid State');
   });
   it('should evaluate in expressions', () => {
-    let val: any = { a: 1, b: 3, c: [2, 3, 5] };
-    expect(evaluateObject(`b in (1,2,3,4,5)`, val)).toBe(true);
-    val = { light: 'Blue' };
+    let val: any = { a: 1, b: 3 };
+    expect(evaluateObject(`a in (1,2) or b in (2,3)`, val)).toBe(true);
+    expect(evaluateObject(`a in (1,2) or b in (2,4)`, val)).toBe(true);
+    expect(evaluateObject(`a in (2,3) or b in (4,5)`, val)).toBe(false);
+    val = { a: 3 };
     expect(() => evaluateObject(`b in (1,2,3,4,5)`, val)).toThrowError(
       'b is not defined'
     );
-    val = { b: ['oj', 'oj', 'pl'] };
-    expect(evaluateObject(`b in (1,2,3,4,5)`, val)).toBe(false);
-    expect(evaluateObject(`b in (oj,pl)`, val)).toBe(false);
-    val = { b: 'Blue' };
-    expect(evaluateObject(`b in ('Blue','Green')`, val)).toBe(true);
-    val = { b: 'Green' };
-    expect(evaluateObject(`b in ('Blue','Green', "Yellow")`, val)).toBe(true);
-    val = { b: 'Green' };
-    expect(evaluateObject(`b not in ('Blue','Green', "RED")`, val)).toBe(false);
-    val = { a: 'Green' };
+    val = { a: 3 };
+    expect(() => evaluateObject(`(1,2,3,4,5) in b`, val)).toThrowError(
+      'b is not defined'
+    );
+    val = { a: ['one', 'two', 'three'] };
+    expect(evaluateObject(`a in (1,2,3)`, val)).toBe(false);
+    expect(evaluateObject(`a in ('one', 'two', 'three')`, val)).toBe(true);
+    val = { a: 'blue' };
+    expect(evaluateObject(`a in ('blue','green')`, val)).toBe(true);
+    val = { a: 'green' };
+    expect(evaluateObject(`a not in ('blue','green','red')`, val)).toBe(false);
+    val = { a: 'green' };
     expect(() =>
-      evaluateObject(`b not in ('Blue','Green', "RED")`, val)
+      evaluateObject(`b not in ('blue','green','red')`, val)
     ).toThrowError('b is not defined');
-    val = { a: ['Green'] };
-    expect(evaluateObject(`('Blue','Green', "RED") in a`, val)).toBe(false);
-    val = { a: ['Green'], b: 'Text', c: 'Hold the line' };
+    val = { a: ['green'] };
+    expect(evaluateObject(`('blue','green','red') in a`, val)).toBe(false);
+    val = { a: ['green'] };
     expect(evaluateObject(`(1,2,3) in a`, val)).toBe(false);
-    val = { a: ['Green'], b: 'Text', c: 'Hold the line' };
-    expect(evaluateObject(`a in ('Green', "Blue", "Yellow")`, val)).toBe(true);
+    val = { a: ['green', 'blue'] };
+    expect(evaluateObject(`a in ('green','blue','yellow')`, val)).toBe(true);
+    val = { a: 'green' };
+    expect(evaluateObject(`a in ('green','blue','yellow')`, val)).toBe(true);
+    val = { a: 'green' };
+    expect(() =>
+      evaluateObject(`b in ('green','blue','yellow')`, val)
+    ).toThrowError('b is not defined');
+    val = { a: 'green' };
+    expect(() =>
+      evaluateObject(`('green','blue','yellow') not in a`, val)
+    ).toThrowError('Right side of IN expression must be an array');
   });
 });

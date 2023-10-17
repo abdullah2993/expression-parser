@@ -41,7 +41,6 @@ export enum TokenType {
   Then = 'then',
 
   In = 'in',
-  Has = 'has',
 }
 
 export class Token {
