@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { BinaryExpression, CaseExpression, InExpression, Expression, GroupExpression } from './ast';
 import { parse } from './parser';
-import { TokenType } from './token';
 
 function evaluateExpressions(expressions: Expression[], context?: (identifier: string) => any): any[] {
   return expressions.map((exp) => evaluateExpression(exp, context));

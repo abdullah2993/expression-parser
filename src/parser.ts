@@ -179,10 +179,7 @@ export class Parser {
   private parseInExpression(left: Expression | Expression[]): Expression {
     this.nextToken();
     const expression = this.parseExpression(this.currentPrecedence);
-    return new InExpression(
-      left as GroupExpression | IdentifierExpression,
-      expression as GroupExpression | IdentifierExpression
-    );
+    return new InExpression(left as GroupExpression | IdentifierExpression, expression as GroupExpression | IdentifierExpression);
   }
 
   private parseIsExpression(left: Expression): Expression {

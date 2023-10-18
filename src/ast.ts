@@ -60,10 +60,7 @@ export class CaseExpression implements Node {
 }
 
 export class InExpression implements Node {
-  constructor(
-    public left: IdentifierExpression | GroupExpression,
-    public right: IdentifierExpression | GroupExpression
-  ) {}
+  constructor(public left: IdentifierExpression | GroupExpression, public right: IdentifierExpression | GroupExpression) {}
 
   readonly type = 'InExpression';
 }
