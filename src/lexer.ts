@@ -1,6 +1,6 @@
 import { Token, TokenType } from './token';
 
-export interface Tokenizer{
+export interface Tokenizer {
   next(): Token;
 }
 
@@ -155,10 +155,10 @@ export class Lexer {
   private static isWhiteSpace(charStr: string): boolean {
     const charCode = charStr.charCodeAt(0);
     return (
-      charCode === 0x09 // '\t'
-      || charCode === 0x0a // '\n'
-      || charCode === 0x0d // '\r'
-      || charCode === 0x20 // ' '
+      charCode === 0x09 || // '\t'
+      charCode === 0x0a || // '\n'
+      charCode === 0x0d || // '\r'
+      charCode === 0x20 // ' '
     );
   }
 
@@ -170,9 +170,9 @@ export class Lexer {
   private static isLetter(charStr: string): boolean {
     const charCode = charStr.charCodeAt(0);
     return (
-      (charCode >= 0x41 && charCode <= 0x5a) // A-Z
-      || (charCode >= 0x61 && charCode <= 0x7a) // a-z
-      || charCode === 0x5f // '_'
+      (charCode >= 0x41 && charCode <= 0x5a) || // A-Z
+      (charCode >= 0x61 && charCode <= 0x7a) || // a-z
+      charCode === 0x5f // '_'
     );
   }
 
@@ -194,6 +194,7 @@ export class Lexer {
     else: TokenType.Else,
     end: TokenType.End,
     then: TokenType.Then,
+    in: TokenType.In,
   };
 
   private static resolveIdentifier(ident: string): TokenType {

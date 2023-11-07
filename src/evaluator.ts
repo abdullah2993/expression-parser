@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { BinaryExpression, CaseExpression, Expression } from './ast';
+import { BinaryExpression, CaseExpression, InExpression, Expression, GroupExpression } from './ast';
 import { parse } from './parser';
 
 function evaluateExpressions(expressions: Expression[], context?: (identifier: string) => any): any[] {
@@ -62,6 +62,45 @@ function evaluateCaseExpression(expression: CaseExpression, context?: (identifie
   return false;
 }
 
+const invalidLeftSide = 'Invalid left side of IN expression';
+function evaluateInExpression(expression: InExpression, context?: (identifier: string) => any): any {
+  const { left, right } = expression;
+  const leftValue = evaluateExpression(left, context);
+  const rightValues = evaluateExpression(right, context);
+
+  if (left.type === 'GroupExpression' && right.type === 'IdentifierExpression') {
+    if (!Array.isArray(leftValue)) {
+      throw new Error(invalidLeftSide);
+    }
+    if (rightValues == null) {
+      throw new Error(`${right.name} is not defined`);
+    }
+    if (!Array.isArray(rightValues)) {
+      throw new Error('Right side of IN expression must be an array');
+    }
+    return leftValue.every((v) => rightValues.indexOf(v) !== -1);
+  } else if (left.type === 'IdentifierExpression' && right.type === 'GroupExpression') {
+    if (leftValue == null) {
+      throw new Error(`${left.name} is not defined`);
+    } else {
+      if (Array.isArray(leftValue)) {
+        return leftValue.every((v) => rightValues.includes(v));
+      } else if (typeof leftValue === 'object' && leftValue !== null) {
+        throw new Error(invalidLeftSide);
+      } else {
+        return rightValues.includes(leftValue);
+      }
+    }
+  } else {
+    throw new Error('Invalid left or right side of IN expression');
+  }
+}
+
+function evaluateGroupExpression(expression: GroupExpression, context?: (identifier: string) => any): any {
+  const values = expression.values.map((v) => evaluateExpression(v, context));
+  return values;
+}
+
 function evaluateExpression(expression: Expression, context?: (identifier: string) => any): any {
   switch (expression.type) {
     case 'IdentifierExpression':
@@ -74,6 +113,12 @@ function evaluateExpression(expression: Expression, context?: (identifier: strin
       return evaluateBinaryExpression(expression, context);
     case 'CaseExpression':
       return evaluateCaseExpression(expression, context);
+    case 'InExpression':
+      return evaluateInExpression(expression, context);
+    case 'GroupExpression':
+      return evaluateGroupExpression(expression, context);
+    case 'NotExpression':
+      return !evaluateExpression(expression.expression, context);
     default:
       throw new Error(`Invalid AST node${expression}`);
   }

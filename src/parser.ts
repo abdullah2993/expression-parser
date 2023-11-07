@@ -1,5 +1,13 @@
 import {
-  BinaryExpression, CaseExpression, Expression, FunctionCallExpression, IdentifierExpression, ValueExpression,
+  BinaryExpression,
+  CaseExpression,
+  InExpression,
+  Expression,
+  FunctionCallExpression,
+  IdentifierExpression,
+  ValueExpression,
+  GroupExpression,
+  NotExpression,
 } from './ast';
 import { Lexer, Tokenizer } from './lexer';
 import { Token, TokenType } from './token';
@@ -17,11 +25,13 @@ const precedences: PrecedenceMap = {
   [TokenType.Gt]: 5,
   [TokenType.Gte]: 5,
   [TokenType.Between]: 6,
+  [TokenType.In]: 7,
   [TokenType.Is]: 7,
   [TokenType.Plus]: 8,
   [TokenType.Minus]: 8,
   [TokenType.Mul]: 9,
   [TokenType.Div]: 9,
+  [TokenType.Comma]: 9,
   [TokenType.Lparn]: 10,
 };
 
@@ -38,7 +48,9 @@ export class Parser {
     return this.precedenceMap[this.peekToken.type] ?? 0;
   }
 
-  private prefixParsers: { [key in TokenType]?: (...args: any[]) => Expression };
+  private prefixParsers: {
+    [key in TokenType]?: (...args: any[]) => Expression;
+  };
 
   private infixParsers: { [key in TokenType]?: (...args: any[]) => Expression };
 
@@ -70,8 +82,11 @@ export class Parser {
       [TokenType.And]: this.parseInfixExpression.bind(this),
       [TokenType.Or]: this.parseInfixExpression.bind(this),
       [TokenType.Is]: this.parseIsExpression.bind(this),
+      [TokenType.In]: this.parseInExpression.bind(this),
+      [TokenType.Not]: this.parseNotExpression.bind(this),
       [TokenType.Between]: this.parseBetweenExpression.bind(this),
       [TokenType.Lparn]: this.parseCallExpression.bind(this),
+      [TokenType.Comma]: this.parseCommaExpression.bind(this),
     };
   }
 
@@ -84,9 +99,7 @@ export class Parser {
     if (!prefixParser) {
       throw new Error(`Unexpected start of expression: ${this.currentToken}`);
     }
-
     let leftExpression = prefixParser();
-
     while (precedence < this.peekPrecedence && !this.currentTokenIs(TokenType.EOF)) {
       const infixParser = this.infixParsers[this.peekToken.type];
       if (!infixParser) {
@@ -155,6 +168,20 @@ export class Parser {
     return new BinaryExpression(op, left, this.parseExpression(currentPrecedence));
   }
 
+  private parseNotExpression(left: Expression): Expression {
+    if (!this.peekTokenIs(TokenType.In)) {
+      throw new Error(`Expected in keyword but got ${this.peekToken}`);
+    }
+    this.nextToken();
+    return new NotExpression(this.parseInExpression(left));
+  }
+
+  private parseInExpression(left: Expression | Expression[]): Expression {
+    this.nextToken();
+    const expression = this.parseExpression(this.currentPrecedence);
+    return new InExpression(left as GroupExpression | IdentifierExpression, expression as GroupExpression | IdentifierExpression);
+  }
+
   private parseIsExpression(left: Expression): Expression {
     let op = TokenType.Eq;
     if (this.peekTokenIs(TokenType.Not)) {
@@ -174,7 +201,7 @@ export class Parser {
     return new BinaryExpression(
       TokenType.And,
       new BinaryExpression(TokenType.Gte, left, min),
-      new BinaryExpression(TokenType.Lte, left, max),
+      new BinaryExpression(TokenType.Lte, left, max)
     );
   }
 
@@ -191,8 +218,15 @@ export class Parser {
     return new FunctionCallExpression(fn.name, args);
   }
 
+  private parseCommaExpression(left: Expression): Expression {
+    this.nextToken();
+    const right = this.parseExpression() as GroupExpression;
+    const values = right.type === 'GroupExpression' ? right.values : [right];
+    return new GroupExpression([left, ...values]);
+  }
+
   private parseCaseExpression(): Expression {
-    const conditions: { when: Expression, then: Expression }[] = [];
+    const conditions: { when: Expression; then: Expression }[] = [];
     let last;
     if (!this.peekTokenIs(TokenType.When)) {
       throw new Error(`Expected when got ${this.currentToken}`);
